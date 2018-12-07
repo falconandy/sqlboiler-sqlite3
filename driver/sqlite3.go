@@ -373,9 +373,15 @@ func (s SQLiteDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 		var fkey drivers.ForeignKey
 		var onu, ond, match string
 		var id, seq int
+		var to sql.NullString
 
 		fkey.Table = tableName
-		err = rows.Scan(&id, &seq, &fkey.ForeignTable, &fkey.Column, &fkey.ForeignColumn, &onu, &ond, &match)
+		err = rows.Scan(&id, &seq, &fkey.ForeignTable, &fkey.Column, &to, &onu, &ond, &match)
+		if !to.Valid {
+			fkey.ForeignColumn = "id"
+		} else {
+			fkey.ForeignColumn = to.String
+		}
 		if err != nil {
 			return nil, err
 		}
